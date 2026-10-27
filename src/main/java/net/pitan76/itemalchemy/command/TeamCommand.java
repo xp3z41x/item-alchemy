@@ -35,8 +35,7 @@ public class TeamCommand extends LiteralCommand {
                     @Override
                     public void execute(StringCommandEvent e) {
                         try {
-                            if (FixedOfflinePlayerManager.INSTANCE != null)
-                                FixedOfflinePlayerManager.INSTANCE.addPlayer(e.getPlayer().getUUID().toString(), e.getPlayer().getName());
+                            registerOfflinePlayer(e.getPlayer());
 
                             if (!e.isClient()) {
                                 if (TeamUtil.createTeam(e.getPlayer(), e.getValue(), true)) {
@@ -73,8 +72,7 @@ public class TeamCommand extends LiteralCommand {
                     @Override
                     public void execute(StringCommandEvent e) {
                         try {
-                            if (FixedOfflinePlayerManager.INSTANCE != null)
-                                FixedOfflinePlayerManager.INSTANCE.addPlayer(e.getPlayer().getUUID().toString(), e.getPlayer().getName());
+                            registerOfflinePlayer(e.getPlayer());
 
                             if (!e.isClient()) {
                                 if (TeamUtil.joinTeam(e.getPlayer(), e.getValue())) {
@@ -307,5 +305,15 @@ public class TeamCommand extends LiteralCommand {
         e.sendSuccess("/itemalchemy team leave");
         e.sendSuccess("/itemalchemy team list");
         e.sendSuccess("/itemalchemy team members [Team Name]");
+    }
+
+    // kick <name> looks players up in this list; save it, or it is empty again after a restart
+    private static void registerOfflinePlayer(Player player) {
+        if (FixedOfflinePlayerManager.INSTANCE == null) return;
+        String uuid = player.getUUID().toString();
+        if (FixedOfflinePlayerManager.INSTANCE.containsPlayerByUUID(uuid)) return;
+
+        FixedOfflinePlayerManager.INSTANCE.addPlayer(uuid, player.getName());
+        FixedOfflinePlayerManager.INSTANCE.save();
     }
 }
