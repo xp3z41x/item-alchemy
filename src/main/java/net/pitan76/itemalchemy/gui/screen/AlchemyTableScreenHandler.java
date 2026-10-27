@@ -165,6 +165,8 @@ public class AlchemyTableScreenHandler extends SimpleScreenHandler {
 
     public void setSearchText(String searchText) {
         this.searchText = searchText;
+        // sortBySearch only sets the namespace when the text has "@mod", so clear the previous one
+        this.searchNamespace = "";
     }
 
     public NbtCompound translations = NbtCompound.of();
