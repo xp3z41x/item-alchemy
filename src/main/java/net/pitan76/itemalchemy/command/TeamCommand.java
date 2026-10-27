@@ -78,11 +78,11 @@ public class TeamCommand extends LiteralCommand {
 
                             if (!e.isClient()) {
                                 if (TeamUtil.joinTeam(e.getPlayer(), e.getValue())) {
-                                    e.sendFailure(TextUtil.literal("[ItemAlchemy] Joined Team"));
+                                    e.sendSuccess("[ItemAlchemy] Joined Team");
                                     return;
                                 }
 
-                                e.sendSuccess("[ItemAlchemy]§c Failed join");
+                                e.sendFailure(TextUtil.literal("[ItemAlchemy]§c Failed join"));
                             }
                         } catch (CommandSyntaxException ex) {
                             e.sendFailure(TextUtil.literal("[ItemAlchemy] " + ex.getMessage()));
@@ -142,12 +142,12 @@ public class TeamCommand extends LiteralCommand {
                                 return;
                             }
 
-                            if (senderTeam.get().owner != player.getUUID()) {
+                            if (!player.getUUID().equals(senderTeam.get().owner)) {
                                 e.sendFailure(TextUtil.literal("[ItemAlchemy] You don't have permission"));
                                 return;
                             }
 
-                            if (senderTeam.get().teamID != targetTeam.get().teamID) {
+                            if (!senderTeam.get().teamID.equals(targetTeam.get().teamID)) {
                                 e.sendFailure(TextUtil.literal("[ItemAlchemy] " + targetPlayer.getName() + " is not in your team"));
                                 return;
                             }
@@ -194,12 +194,12 @@ public class TeamCommand extends LiteralCommand {
                                 return;
                             }
 
-                            if (senderTeam.get().owner != player.getUUID()) {
+                            if (!player.getUUID().equals(senderTeam.get().owner)) {
                                 e.sendFailure(TextUtil.literal("[ItemAlchemy] You don't have permission"));
                                 return;
                             }
 
-                            if (senderTeam.get().teamID != targetTeam.get().teamID) {
+                            if (!senderTeam.get().teamID.equals(targetTeam.get().teamID)) {
                                 e.sendFailure(TextUtil.literal("[ItemAlchemy] " + targetPlayer.getName() + " is not in your team"));
                                 return;
                             }
@@ -218,7 +218,8 @@ public class TeamCommand extends LiteralCommand {
 
                     @Override
                     public String getArgumentName() {
-                        return "player";
+                        // must match the node name registered above, or e.getValue() can't read the argument
+                        return "offlineplayer";
                     }
                 });
             }
