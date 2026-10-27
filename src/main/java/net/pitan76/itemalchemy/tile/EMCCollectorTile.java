@@ -1,5 +1,6 @@
 package net.pitan76.itemalchemy.tile;
 
+import net.pitan76.itemalchemy.util.TileUtils;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
 import net.pitan76.itemalchemy.ItemAlchemy;
@@ -224,6 +225,13 @@ public class EMCCollectorTile extends EMCStorageBlockEntity implements ExtendBlo
     @Override
     public ItemStackList getItems() {
         return inventory;
+    }
+
+    @Override
+    public net.minecraft.item.ItemStack getStack(int slot) {
+        // slot 1 is the target, a ghost copy: it must not drop when the block is broken
+        if (slot == 1 && TileUtils.isBlockGone(this)) return ItemStackUtil.empty();
+        return IInventory.super.getStack(slot);
     }
 
     @Override

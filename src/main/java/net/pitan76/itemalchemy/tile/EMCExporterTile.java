@@ -1,5 +1,6 @@
 package net.pitan76.itemalchemy.tile;
 
+import net.pitan76.itemalchemy.util.TileUtils;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
 import net.pitan76.itemalchemy.EMCManager;
@@ -168,6 +169,8 @@ public class EMCExporterTile extends OwnedBlockEntity implements ExtendBlockEnti
     public ItemStackList getItems() {
         ItemStackList result = ItemStackList.ofSize(filter.size(), ItemStackUtil.empty());
 
+        // the stacks are virtual: nothing drops when the block is broken
+        if (TileUtils.isBlockGone(this)) return result;
         if (!hasTeam()) return result;
         if (getFilterCount() <= 0) return result;
 
