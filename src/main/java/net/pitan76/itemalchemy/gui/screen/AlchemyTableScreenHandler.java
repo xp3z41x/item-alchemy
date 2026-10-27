@@ -243,6 +243,8 @@ public class AlchemyTableScreenHandler extends SimpleScreenHandler {
             ExtractSlot extractSlot = (ExtractSlot) slot;
             ItemStack definedStack = extractSlot.inventory.definedStacks.get(e.slot + 14);
             ItemStack stack = SlotUtil.getStack(extractSlot);
+            // an empty position has no defined stack, and an item without EMC would divide by zero below
+            if (definedStack == null || EMCManager.get(definedStack) <= 0) return;
 
             int receivable = 1;
             if (e.getActionType() == CompatSlotActionType.QUICK_MOVE) {
