@@ -78,6 +78,11 @@ public class RegisterInventory extends CompatInventory {
             if (slot == 50) {
                 if (!player.isClient() && EMCManager.get(stack) != 0) {
                     EMCManager.writeEmcToPlayer(player, stack);
+                    // a charged Klein Star also gives back the EMC stored in it
+                    if (stack.getItem().instanceOf(KleinStar.class)) {
+                        long stored = KleinStar.getStoredEmc(stack);
+                        if (stored > 0) EMCManager.incrementEmc(player, stored * stack.getCount());
+                    }
                     if (player.isServerPlayerEntity())
                         EMCManager.syncS2C(player);
                 }
