@@ -94,7 +94,7 @@ public class PhilosopherStone extends CompatItem implements FixedRecipeRemainder
         addExchangeInMap("minecraft:sand", "minecraft:grass_block");
         addExchangeInMap("minecraft:glass", "minecraft:sand");
 
-        addExchangeInMap("minecraft:nettherack", "minecraft:cobblestone");
+        addExchangeInMap("minecraft:netherrack", "minecraft:cobblestone");
         addExchangeInMap("minecraft:sandstone", "minecraft:gravel");
         addExchangeInMap("minecraft:pumpkin", "minecraft:melon");
         addExchangeInMap("minecraft:melon", "minecraft:pumpkin");
