@@ -58,6 +58,7 @@ public class EMCCondenserMK2Tile extends EMCCondenserTile {
     @Override
     public void tick(TileTickEvent<EMCCondenserTile> e) {
         if (e.isClient()) return;
+        markDirtyIfEMCChanged();
 
         World world = e.getMidohraWorld();
         if (!getItems().isEmpty()) {

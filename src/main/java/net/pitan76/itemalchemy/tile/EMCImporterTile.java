@@ -117,6 +117,7 @@ public class EMCImporterTile extends OwnedBlockEntity implements ExtendBlockEnti
     @Override
     public void tick(TileTickEvent<EMCImporterTile> e) {
         if (e.isClient()) return;
+        markDirtyIfEMCChanged();
         if (!hasTeam()) return;
 
         EMCStorageUtil.transferAllEMC(this);
