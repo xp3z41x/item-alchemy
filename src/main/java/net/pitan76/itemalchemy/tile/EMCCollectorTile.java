@@ -228,9 +228,11 @@ public class EMCCollectorTile extends EMCStorageBlockEntity implements ExtendBlo
 
     @Override
     public int[] getAvailableSlots(AvailableSlotsArgs args) {
-        int[] result = new int[getItems().size()];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = i;
+        // slot 1 is the target, a one-item ghost copy: hoppers must not pull it
+        int[] result = new int[getItems().size() - 1];
+        for (int i = 0, j = 0; i < getItems().size(); i++) {
+            if (i == 1) continue;
+            result[j++] = i;
         }
         return result;
     }
