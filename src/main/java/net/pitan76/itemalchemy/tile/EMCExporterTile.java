@@ -3,6 +3,7 @@ package net.pitan76.itemalchemy.tile;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
 import net.pitan76.itemalchemy.EMCManager;
+import net.pitan76.itemalchemy.config.ItemAlchemyConfig;
 import net.pitan76.itemalchemy.data.TeamState;
 import net.pitan76.itemalchemy.gui.screen.EMCExporterScreenHandler;
 import net.pitan76.itemalchemy.tile.base.OwnedBlockEntity;
@@ -98,6 +99,10 @@ public class EMCExporterTile extends OwnedBlockEntity implements ExtendBlockEnti
 
         if (nbt.has("ownerName"))
             ownerName = nbt.getString("ownerName");
+
+        // storedEMC only mirrors the team's EMC and is rebuilt in tick(); a saved copy must not become real EMC
+        storedEMC = 0;
+        oldStoredEMC = -1;
     }
 
     @Nullable
@@ -110,13 +115,17 @@ public class EMCExporterTile extends OwnedBlockEntity implements ExtendBlockEnti
     public void tick(TileTickEvent<EMCExporterTile> e) {
         if (e.isClient()) return;
 
+        if (!hasTeam()) {
+            storedEMC = 0;
+            oldStoredEMC = -1;
+            return;
+        }
         if (oldStoredEMC != -1 && oldStoredEMC == storedEMC) return;
-        if (!hasTeam()) return;
 
         @SuppressWarnings("OptionalGetWithoutIsPresent")
         TeamState teamState = getTeamState().get();
         if (oldStoredEMC != -1)
-            teamState.storedEMC -= oldStoredEMC - storedEMC;
+            teamState.storedEMC = Math.max(0, teamState.storedEMC - (oldStoredEMC - storedEMC));
 
         storedEMC = Math.min(teamState.storedEMC, getMaxEMC());
         oldStoredEMC = storedEMC;
@@ -126,15 +135,31 @@ public class EMCExporterTile extends OwnedBlockEntity implements ExtendBlockEnti
 
     @Override
     public net.minecraft.item.ItemStack removeStack(int slot, int count) {
-        long consumeEmc = EMCManager.get(CACHE.get(slot).getItem()) * count;
+        // hand out only what the team can pay for, and charge exactly what is handed out
+        if (slot < 0 || slot >= filter.size() || count <= 0) return ItemStackUtil.empty();
+        java.util.Optional<TeamState> team = getTeamState();
+        if (!team.isPresent()) return ItemStackUtil.empty();
 
-        getTeamState().ifPresent(teamState -> {
-            if (teamState.storedEMC < consumeEmc) return;
-            teamState.storedEMC -= consumeEmc;
-            markTeamStateDirty();
-        });
+        ItemStack available = getItems().getAsMidohra(slot);
+        if (available.isEmpty()) return ItemStackUtil.empty();
 
-        return IInventory.super.removeStack(slot, count);
+        long unit = EMCManager.get(available.getItem());
+        if (unit <= 0) return ItemStackUtil.empty();
+
+        int amount = (int) Math.min(Math.min(count, available.getCount()), team.get().storedEMC / unit);
+        if (amount <= 0) return ItemStackUtil.empty();
+
+        team.get().storedEMC -= unit * amount;
+        markTeamStateDirty();
+
+        ItemStack result = available.copy();
+        result.setCount(amount);
+        return result.toMinecraft();
+    }
+
+    @Override
+    public void setStack(int slot, net.minecraft.item.ItemStack stack) {
+        // the slots are virtual (getItems() is rebuilt on every call): writing to them only deleted the item
     }
 
     public ItemStackList CACHE = ItemStackList.ofSize(9, ItemStackUtil.empty());
@@ -166,7 +191,8 @@ public class EMCExporterTile extends OwnedBlockEntity implements ExtendBlockEnti
             if (aveEMC < neededEMC) continue;
             if (!teamState.registeredItems.contains(filterStack.getItem().getId().toString())) continue;
 
-            ItemStack stack = filterStack.copy();
+            // like the condensers, copy only the item unless remove_data_from_copy_stack is off
+            ItemStack stack = ItemAlchemyConfig.isRemoveDataFromCopyStack() ? filterStack.getItem().createStack() : filterStack.copy();
             stack.setCount(Math.min((int) Math.floorDiv(aveEMC, neededEMC), MAX_STACK_COUNT));
 
             result.set(i, stack);
@@ -241,7 +267,7 @@ public class EMCExporterTile extends OwnedBlockEntity implements ExtendBlockEnti
 
     @Override
     public boolean canExtract() {
-        return true;
+        return hasTeam() && storedEMC > 0;
     }
 
     @Override
